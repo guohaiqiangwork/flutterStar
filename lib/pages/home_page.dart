@@ -31,6 +31,7 @@ class _HomePageState extends State<HomePage> {
         // 一步数据用这个
         body: Column(
           children: <Widget>[
+            
             // 获取轮播图
             FutureBuilder(
               future: getHomePageContent(),
@@ -73,6 +74,7 @@ class _HomePageState extends State<HomePage> {
                 }
               },
             ),
+            AdBanner(),//广告栏
           ],
         )
         // 滚动视图
@@ -97,7 +99,7 @@ class SwiperDiy extends StatelessWidget {
     //  ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: true);
     return Container(
       height: ScreenUtil().setHeight(300),
-      width: ScreenUtil().setHeight(750),
+      width: ScreenUtil().setWidth(1080),
       child: Swiper(
         itemBuilder: (BuildContext context, int index) {
           return Image.network(
@@ -127,8 +129,9 @@ class TopNavigator extends StatelessWidget {
           child: Column(
             children: <Widget>[
               Image.network(
-                item['picture'],
-                width: ScreenUtil().setHeight(150),
+                "http://111.231.90.86:5050" +  item['picture'],
+                height: ScreenUtil().setHeight(50),
+                width: ScreenUtil().setWidth(130),
               ),
               Text(
                 item['name'],
@@ -154,8 +157,8 @@ class TopNavigator extends StatelessWidget {
         crossAxisCount: 4, //每行5个
         padding: EdgeInsets.all(5.0),
         children: navgatorList.map((item) {
-          item['picture'] =
-              "http://111.231.90.86:5050" + item['picture'].toString();
+          // item['picture'] =
+          //     "http://111.231.90.86:5050" + item['picture'].toString();
           // print(item.toString() + '到沙发接口连接了进来');
           return _gridViewItemUI(context, item);
         }).toList(),
@@ -164,6 +167,19 @@ class TopNavigator extends StatelessWidget {
   }
 }
 
+// 广告栏
+class AdBanner extends StatelessWidget {
+  // final String adPicture;
+  // AdBanner({Key key, this.adPicture}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: ScreenUtil().setHeight(100),
+      width: ScreenUtil.screenWidth,
+      child: Image.network('https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=392792945,2460222189&fm=26&gp=0.jpg',fit: BoxFit.fill,),
+    );
+  }
+}
 // 静态
 // class HomePage extends StatelessWidget {
 //   @override
