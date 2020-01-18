@@ -7,6 +7,10 @@ import 'home_page.dart';
 import 'cart_page.dart';
 import 'category_page.dart';
 import 'member_page.dart';
+//第三方库引入
+import 'package:flutter_screenutil/flutter_screenutil.dart';//ui适配
+
+
 // class IndexPage extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
@@ -61,6 +65,8 @@ class _IndexPageState extends State<IndexPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ui适配初始化
+     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: true);
     return Scaffold(
       backgroundColor: Color.fromRGBO(245, 245, 245,1.0),
       // 底部导航栏

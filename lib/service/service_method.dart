@@ -19,6 +19,22 @@ Future getHomePageContent() async {
       throw Exception('请求失败首页数据');
     }
   } catch (e) {
-    return print('系统错误');
+    return print('系统错误首页');
+  }
+}
+// 获取分类
+Future getTopNavigatorConent()async{
+  try{
+    print('获取分类数据.....');
+    Response response;
+    Dio dio = new Dio();
+    response = await dio.get(servicePath['topNavigatorConent']);
+    if(response.statusCode == 200){
+      return response.data;
+    }else{
+      throw Exception('请求分类数据失败.......');
+    }
+  }catch(e){
+    return print(e.message.toString() + '分类数据');
   }
 }
