@@ -16,6 +16,9 @@ Future getHttpData(url,{ketwords})async{
  
     }
     if(response.statusCode == 200){
+      if(url == 'categoryContent'){
+        print(response.data);
+      }
       return response.data;
     }else{
       throw Exception('请求楼层数据失败.......');

@@ -5,5 +5,4 @@ const servicePath={
   'topNavigatorConent':serviceUrl +'/sort/selectSortF',//获取分类
   'hotListConent':serviceUrl +'/goods/getNewGoods',//获取热门推荐
   'flootcontent':serviceUrl +'/sort/getHot',//获取楼层数据
-  'hostPageContent':'http://test.baixingliangfan.cn/baixing/wxmini/homePageBelowConten'
 };
