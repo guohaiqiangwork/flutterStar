@@ -3,12 +3,25 @@ import '../service/service_method.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'dart:convert'; //json 数据处理
 import 'package:flutter_screenutil/flutter_screenutil.dart'; //ui适配
+import 'package:url_launcher/url_launcher.dart'; //打开链接 拨打电话等
 
 class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
+  // 页面保持效果start  在<HomePage>后面加with AutomaticKeepAliveClientMixin
+  @override
+  bool get wantKeepAlive => true;
+  // 初始化方法
+  @override
+  void initState() {
+    super.initState();
+    print(111);
+  }
+
+  // end
   String homePageContent = '获取数据中...';
   // @override
   // void initState() {
@@ -26,15 +39,15 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('api配置'),
+          title: Text('首页'),
         ),
         // 一步数据用这个
-        body: Column(
+        body: SingleChildScrollView(
+            child: Column(
           children: <Widget>[
-            
             // 获取轮播图
             FutureBuilder(
-              future: getHomePageContent(),
+              future: getHttpData('homePageContent'),
               builder: (context, snapshot) {
                 // 判断是否有值
                 if (snapshot.hasData) {
@@ -55,7 +68,7 @@ class _HomePageState extends State<HomePage> {
             ),
             // 获取分类
             FutureBuilder(
-              future: getTopNavigatorConent(),
+              future: getHttpData('topNavigatorConent'),
               builder: (context, snapshot) {
                 // 判断是否有值
                 if (snapshot.hasData) {
@@ -74,9 +87,55 @@ class _HomePageState extends State<HomePage> {
                 }
               },
             ),
-            AdBanner(),//广告栏
+            AdBanner(), //广告栏
+            LeadrPhone(), //拨打电话
+            // 获取热门商品
+            FutureBuilder(
+              future: getHttpData('hotListConent'),
+              builder: (context, snapshot) {
+                // 判断是否有值
+                if (snapshot.hasData) {
+                  // 数据处理start
+                  var data = snapshot.data['data'];
+                  List<Map> recommendList = (data as List).cast(); //热门数据
+                  return Column(
+                    children: <Widget>[
+                      Recommend(recommendList: recommendList), //分类
+                    ],
+                  );
+                } else {
+                  return Center(
+                    child: Text('加载中.....'),
+                  );
+                }
+              },
+            ),
+            // 获取楼层商品
+            FutureBuilder(
+              future: getHttpData('flootcontent'),
+              builder: (context, snapshot) {
+                // 判断是否有值
+                if (snapshot.hasData) {
+                  // 数据处理start
+                  var data = snapshot.data['data'];
+                  List<Map> floorGoodsList = (data as List).cast();
+                  return Column(
+                    children: <Widget>[
+                      FloorContent(floorGoodsList: floorGoodsList),
+                    ],
+                  );
+                } else {
+                  return Center(
+                    child: Text('加载中.....'),
+                  );
+                }
+              },
+            ),
+            // 加载列表
+              // Hotgoods()
           ],
-        )
+        ))
+
         // 滚动视图
         // SingleChildScrollView(
         //   child: Text(homePageContent),
@@ -129,7 +188,7 @@ class TopNavigator extends StatelessWidget {
           child: Column(
             children: <Widget>[
               Image.network(
-                "http://111.231.90.86:5050" +  item['picture'],
+                "http://111.231.90.86:5050" + item['picture'],
                 height: ScreenUtil().setHeight(50),
                 width: ScreenUtil().setWidth(130),
               ),
@@ -176,10 +235,233 @@ class AdBanner extends StatelessWidget {
     return Container(
       height: ScreenUtil().setHeight(100),
       width: ScreenUtil.screenWidth,
-      child: Image.network('https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=392792945,2460222189&fm=26&gp=0.jpg',fit: BoxFit.fill,),
+      child: Image.network(
+        'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=392792945,2460222189&fm=26&gp=0.jpg',
+        fit: BoxFit.fill,
+      ),
     );
   }
 }
+
+// 拨打电话
+class LeadrPhone extends StatelessWidget {
+  // final String leadrImage;//店长图片
+  // final String leadrPhone;//店长电话
+  // LeadrPhone({Key key,this.leadrImage,this.leadrPhone}):super(key:key);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 30,
+      width: 1080,
+      child: InkWell(
+        onTap: _launchURl,
+        child: Image.network(
+          'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3843730208,814207702&fm=26&gp=0.jpg',
+          fit: BoxFit.fill,
+        ),
+      ),
+    );
+  }
+
+  void _launchURl() async {
+    String url = 'tel:12306';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'url不能进行访问，异常。';
+    }
+  }
+}
+
+//商品推荐
+class Recommend extends StatelessWidget {
+  final List recommendList;
+
+  Recommend({Key key, this.recommendList}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        height: ScreenUtil().setHeight(380),
+        margin: EdgeInsets.only(top: 10.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[_titleWidget(), _recommedList()],
+          ),
+        ));
+  }
+
+//推荐商品标题
+  Widget _titleWidget() {
+    return Container(
+        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.fromLTRB(10.0, 2.0, 0, 5.0),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            border:
+                Border(bottom: BorderSide(width: 0.5, color: Colors.black12))),
+        child: Text('商品推荐', style: TextStyle(color: Colors.pink)));
+  }
+
+  Widget _recommedList() {
+    return Container(
+      height: ScreenUtil().setHeight(330),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: recommendList.length,
+        itemBuilder: (context, index) {
+          return _item(index);
+        },
+      ),
+    );
+  }
+
+  Widget _item(index) {
+    return InkWell(
+      onTap: () {},
+      child: Container(
+          height: ScreenUtil().setHeight(330),
+          width: ScreenUtil().setWidth(250),
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              border:
+                  Border(left: BorderSide(width: 0.5, color: Colors.black12))),
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Image.network(recommendList[index]['pictureUrl']),
+                Text('￥${recommendList[index]['rebate']}'),
+                Text(
+                  '￥${recommendList[index]['price']}',
+                  style: TextStyle(
+                      decoration: TextDecoration.lineThrough,
+                      color: Colors.grey),
+                )
+              ],
+            ),
+          )),
+    );
+  }
+}
+
+// 楼层商品
+class FloorContent extends StatelessWidget {
+  final List floorGoodsList;
+  FloorContent({Key key, this.floorGoodsList}) : super(key: key);
+  @override
+  // 总A
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+          children: floorGoodsList.map((item) {
+        return _floortitle(context, item);
+      }).toList()
+      ),
+    );
+  }
+
+  // Widget _recommedList() {
+  //   return Container(
+  //     height: ScreenUtil().setHeight(330),
+  //     child: ListView.builder(
+  //       scrollDirection: Axis.horizontal,
+  //       itemCount: floorGoodsList.length,
+  //       itemBuilder: (context, index) {
+  //         return _item(index);
+  //       },
+  //     ),
+  //   );
+  // }
+  // 商品块D
+  Widget _productcontent() {
+    return Container(
+      child: GridView.count(
+        crossAxisCount: 2, //每行5个
+        padding: EdgeInsets.all(5.0),
+        children: floorGoodsList.map((item) {
+          // item['picture'] =
+          //     "http://111.231.90.86:5050" + item['picture'].toString();
+          // print(item.toString() + '到沙发接口连接了进来');
+          // return _firstRow(item);
+        }).toList(),
+      ),
+    );
+  }
+
+  // 标题栏B
+  // Widget _floortitle(context, index) {
+  //   // _firstRow(floorGoodsList[index]);
+  //   return Container(
+  //     padding: EdgeInsets.all(8.0),
+  //     child: Image.network(floorGoodsList[index]['picture']),
+  //   );
+  // }
+  //推荐商品标题
+  Widget _floortitle(context, item) {
+    // _firstRow(item);
+    return Container(
+        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.fromLTRB(10.0, 2.0, 0, 5.0),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            border:
+                Border(bottom: BorderSide(width: 0.5, color: Colors.black12))),
+        child: Image.network(item['picture']),
+        );
+  }
+
+// 单个商品C
+  Widget _firstRow(items) {
+    return Container(
+      child: Column(
+       children:items['goodsList'].map((item){
+              // children: <Widget>[
+              //   Image.network(item['pictureUrl']),
+              //   Text('￥${item['goodsName']}'),
+              //   Text(
+              //     '￥${item['price']}',
+              //     style: TextStyle(
+              //         decoration: TextDecoration.lineThrough,
+              //         color: Colors.grey),
+              //   )
+              // ];
+       }).toList()
+      ),
+    );
+  }
+  // 商品
+  // Widget _goodsItem(Map goods) {
+  //   return Container(
+  //     width: ScreenUtil().setWidth(375),
+  //     child: InkWell(
+  //       onTap: () {},
+  //       child: Image.network(goods['pictureUrl']),
+  //     ),
+  //   );
+  // }
+}
+
+// 加载列表
+class Hotgoods extends StatefulWidget {
+  @override
+  _HotgoodsState createState() => _HotgoodsState();
+}
+
+class _HotgoodsState extends State<Hotgoods> {
+  @override
+  void initState() { 
+    super.initState();
+  
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text('7989'),
+    );
+  }
+}
+
 // 静态
 // class HomePage extends StatelessWidget {
 //   @override
@@ -191,7 +473,7 @@ class AdBanner extends StatelessWidget {
 //       ),
 //     );
 //   }
-//   // 请求get
+//   // ��求get
 //   void getHttp() async{
 //     try{
 //       Response response;

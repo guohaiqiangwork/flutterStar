@@ -1,4 +1,4 @@
-#Sat Jan 18 13:56:48 CST 2020
+#Sun Jan 19 09:38:03 CST 2020
 base.0=/Users/haiqiangguo/flutterStar/build/app/intermediates/dex/debug/mergeDexDebug/out/classes.dex
 path.0=classes.dex
 renamed.0=classes.dex
