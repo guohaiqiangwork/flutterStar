@@ -13,7 +13,6 @@ Future getHttpData(url,{ketwords})async{
        response = await dio.get(servicePath[url]);
     }else{
        response = await dio.get(servicePath[url].toString() + '?' + ketwords.toString());
- 
     }
     if(response.statusCode == 200){
       if(url == 'categoryContent'){
@@ -27,7 +26,8 @@ Future getHttpData(url,{ketwords})async{
     return print(e.message.toString());
   }
 }
-// get 请求数据接口
+
+// post 请求数据接口
 Future postHttpData(url,{ketwords})async{
   try{
     print('获取数据.....');
@@ -39,6 +39,21 @@ Future postHttpData(url,{ketwords})async{
        response = await dio.post(servicePath[url],data :ketwords);
  
     }
+    if(response.statusCode == 200){
+      return response.data;
+    }else{
+      throw Exception('请求楼层数据失败.......');
+    }
+  }catch(e){
+    return print(e.message.toString());
+  }
+}
+// get 请求数据接口
+Future getHttpDataP()async{
+  try{
+    Response response;
+    Dio dio = new Dio();
+    response = await dio.get('http://111.231.90.86:8080/sort/selectSortC/01');
     if(response.statusCode == 200){
       return response.data;
     }else{

@@ -3,6 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../service/service_method.dart';
 import 'dart:convert';
 import '../model/category.dart';
+import '../model/categoryGoodsList.dart';
+import 'package:provide/provide.dart';
+import '../provide/child_category.dart';
 
 class CategoryPage extends StatefulWidget {
   @override
@@ -13,11 +16,16 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('商品分类'),),
+      appBar: AppBar(
+        title: Text('商品分类'),
+      ),
       body: Container(
         child: Row(
           children: <Widget>[
-            LeftCatgegoryNav()
+            LeftCatgegoryNav(),
+            Column(
+              children: <Widget>[RightCcategoryNav(), CatgoryGoodsList()],
+            )
           ],
         ),
       ),
@@ -29,50 +37,58 @@ class _CategoryPageState extends State<CategoryPage> {
 class LeftCatgegoryNav extends StatefulWidget {
   _LeftCatgegoryNavState createState() => _LeftCatgegoryNavState();
 }
+
 class _LeftCatgegoryNavState extends State<LeftCatgegoryNav> {
-  List list = [];
+  List list = []; //数据
+  var listOnlcik = 0;
   @override
-  void initState() { 
+  void initState() {
     _getCategory();
     super.initState();
-    
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: ScreenUtil().setWidth(180),
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(width: 1,color: Colors.black12)
-        )
-      ),
+          border: Border(right: BorderSide(width: 1, color: Colors.black12))),
       child: ListView.builder(
-        itemCount:list.length,
-        itemBuilder: (context,index){
+        itemCount: list.length,
+        itemBuilder: (context, index) {
           return _leftInkWell(index);
         },
-
-      ) ,
-    );
-  }
-// 左边标题
-  Widget _leftInkWell(int index){
-    return InkWell(
-      onTap: (){},
-      child: Container(
-        height: ScreenUtil().setHeight(100),
-        padding: EdgeInsets.only(left: 10,top: 15),
-        decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(width: 1,color: Colors.black12)
-        )
-        ),
-        child: Text(list[index].mallCategoryName,style: TextStyle(fontSize: ScreenUtil().setSp(28)),),
       ),
     );
   }
 
+// 左边标题
+  Widget _leftInkWell(int index) {
+    bool isClick = false;
+    isClick = (index == listOnlcik) ? true : false;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          listOnlcik = index;
+        });
+        // 赋值
+        var childList = list[index].bxMallSubDto;
+        Provide.value<ChildCategory>(context).getChildCategory(childList);
+      },
+      child: Container(
+        height: ScreenUtil().setHeight(100),
+        padding: EdgeInsets.only(left: 10, top: 15),
+        decoration: BoxDecoration(
+            color: isClick ? Colors.black12 : Colors.white,
+            border:
+                Border(bottom: BorderSide(width: 1, color: Colors.black12))),
+        child: Text(
+          list[index].mallCategoryName,
+          style: TextStyle(fontSize: ScreenUtil().setSp(28)),
+        ),
+      ),
+    );
+  }
 
   void _getCategory() async {
     var dataModel = {
@@ -830,10 +846,266 @@ class _LeftCatgegoryNavState extends State<LeftCatgegoryNav> {
         }
       ]
     };
+    // var data = json.decode(dataModel.toString());
     CategoryModel category = CategoryModel.fromJson(dataModel);
     setState(() {
       list = category.data;
     });
-    // list.data.forEach((item)=>print(item.mallCategoryName));
+    // 初始化展示
+    Provide.value<ChildCategory>(context)
+        .getChildCategory(list[0].bxMallSubDto);
+    // list[0].bxMallSubDto.forEach((item) =>  print(item.mallSubName));
+    // list.forEach((item)=>print(item[0].bxMallSubDto[0]));
+    // list[0].bxMallSubDto.forEach((item) => print(item.mallSubName));
+  }
+}
+
+//右侧小类别
+class RightCcategoryNav extends StatefulWidget {
+  @override
+  _RightCcategoryNavState createState() => _RightCcategoryNavState();
+}
+
+class _RightCcategoryNavState extends State<RightCcategoryNav> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(child: Provide<ChildCategory>(
+      builder: (context, child, childCategory) {
+        return Container(
+          height: ScreenUtil().setHeight(80),
+          width: ScreenUtil().setWidth(570),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              border:
+                  Border(bottom: BorderSide(width: 1, color: Colors.black12))),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: childCategory.childCategoryList.length,
+            itemBuilder: (context, index) {
+              return _rightInkwell(childCategory.childCategoryList[index]);
+            },
+          ),
+        );
+      },
+    ));
+  }
+
+  // 小标题
+  Widget _rightInkwell(BxMallSubDto item) {
+    return InkWell(
+      onTap: () {},
+      child: Container(
+        padding: EdgeInsetsDirectional.fromSTEB(5.0, 10.0, 5.0, 10.0),
+        child: Text(
+          item.mallSubName,
+          style: TextStyle(fontSize: ScreenUtil().setSp(28)),
+        ),
+      ),
+    );
+  }
+}
+
+// 商品块
+
+class CatgoryGoodsList extends StatefulWidget {
+  @override
+  _CatgoryGoodsListState createState() => _CatgoryGoodsListState();
+}
+
+class _CatgoryGoodsListState extends State<CatgoryGoodsList> {
+  @override
+  void initState() {
+    _getGoodslist();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text('商品列表'),
+    );
+  }
+
+  // void _getGoodsList()async{
+  //   // var codeList =['01','02'];
+  //  await getHttpDataP().then((val){
+  //   print('商品数据 ${val}');
+  //  });
+  // }
+  void _getGoodslist() async {
+    print('格局打开方式点击》》》》》》》》》》》》》》》');
+    var data = {
+      "code": "0",
+      "message": "success",
+      "data": [
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190116145309_40.jpg",
+          "oriPrice": 2.5,
+          "presentPrice": 1.8,
+          "goodsName": "哈尔滨冰爽啤酒330ml",
+          "goodsId": "3194330cf25f43c3934dbb8c2a964ade"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190115185215_1051.jpg",
+          "oriPrice": 2,
+          "presentPrice": 1.8,
+          "goodsName": "燕京啤酒8°330ml",
+          "goodsId": "522a3511f4c545ab9547db074bb51579"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190121102419_9362.jpg",
+          "oriPrice": 1.98,
+          "presentPrice": 1.8,
+          "goodsName": "崂山清爽8°330ml",
+          "goodsId": "bbdbd5028cc849c2998ff84fb55cb934"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712181330_9746.jpg",
+          "oriPrice": 2.5,
+          "presentPrice": 1.9,
+          "goodsName": "雪花啤酒8°清爽330ml",
+          "goodsId": "87013c4315e54927a97e51d0645ece76"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712180233_4501.jpg",
+          "oriPrice": 2.5,
+          "presentPrice": 2.2,
+          "goodsName": "崂山啤酒8°330ml",
+          "goodsId": "86388a0ee7bd4a9dbe79f4a38c8acc89"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190116164250_1839.jpg",
+          "oriPrice": 2.5,
+          "presentPrice": 2.3,
+          "goodsName": "哈尔滨小麦王10°330ml",
+          "goodsId": "d31a5a337d43433385b17fe83ce2676a"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712181139_2653.jpg",
+          "oriPrice": 2.7,
+          "presentPrice": 2.5,
+          "goodsName": "三得利清爽啤酒10°330ml",
+          "goodsId": "74a1fb6adc1f458bb6e0788c4859bf54"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190121162731_3928.jpg",
+          "oriPrice": 2.75,
+          "presentPrice": 2.5,
+          "goodsName": "三得利啤酒7.5度超纯啤酒330ml",
+          "goodsId": "d52fa8ba9a5f40e6955be9e28a764f34"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712180452_721.jpg",
+          "oriPrice": 4.5,
+          "presentPrice": 3.7,
+          "goodsName": "青岛啤酒11°330ml",
+          "goodsId": "a42c0585015540efa7e9642ec1183940"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190121170407_7423.jpg",
+          "oriPrice": 4.4,
+          "presentPrice": 4,
+          "goodsName": "三得利清爽啤酒500ml 10.0°",
+          "goodsId": "94ec3df73f4446b5a5f0d80a8e51eb9d"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712181427_6101.jpg",
+          "oriPrice": 4.5,
+          "presentPrice": 4,
+          "goodsName": "雪花勇闯天涯啤酒8°330ml",
+          "goodsId": "d80462faab814ac6a7124cec3b868cf7"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180717151537_3425.jpg",
+          "oriPrice": 4.9,
+          "presentPrice": 4.1,
+          "goodsName": "百威啤酒听装9.7°330ml",
+          "goodsId": "91a849140de24546b0de9e23d85399a3"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190121101926_2942.jpg",
+          "oriPrice": 4.95,
+          "presentPrice": 4.5,
+          "goodsName": "崂山啤酒8°500ml",
+          "goodsId": "3758bbd933b145f2a9c472bf76c4920c"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712175422_518.jpg",
+          "oriPrice": 5,
+          "presentPrice": 4.5,
+          "goodsName": "百威3.6%大瓶9.7°P460ml",
+          "goodsId": "dc32954b66814f40977be0255cfdacca"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180717151454_4834.jpg",
+          "oriPrice": 5,
+          "presentPrice": 4.5,
+          "goodsName": "青岛啤酒大听装500ml",
+          "goodsId": "fc85510c3af7428dbf1cb0c1bcb43711"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712181007_4229.jpg",
+          "oriPrice": 5.5,
+          "presentPrice": 5,
+          "goodsName": "三得利金纯生啤酒580ml 9°",
+          "goodsId": "14bd89f066ca4949af5e4d5a1d2afaf8"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190121100752_4292.jpg",
+          "oriPrice": 6.6,
+          "presentPrice": 6,
+          "goodsName": "哈尔滨啤酒冰纯白啤（小麦啤酒）500ml",
+          "goodsId": "89bccd56a8e9465692ccc469cd4b442e"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712175656_777.jpg",
+          "oriPrice": 7.2,
+          "presentPrice": 6.6,
+          "goodsName": "百威啤酒500ml",
+          "goodsId": "3a94dea560ef46008dad7409d592775d"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20180712180754_2838.jpg",
+          "oriPrice": 7.78,
+          "presentPrice": 7,
+          "goodsName": "青岛啤酒皮尔森10.5°330ml",
+          "goodsId": "97adb29137fb47689146a397e5351926"
+        },
+        {
+          "image":
+              "http://images.baixingliangfan.cn/compressedPic/20190116164149_2165.jpg",
+          "oriPrice": 7.78,
+          "presentPrice": 7,
+          "goodsName": "青岛全麦白啤11°500ml",
+          "goodsId": "f78826d3eb0546f6a2e58893d4a41b43"
+        }
+      ]
+    };
+    // var fromdata =json.decode(data.toString());
+    CategoryGoodsListModel goodsList =  CategoryGoodsListModel.fromJson(data);
+        // setState(() {
+        //  list= goodsList.data;
+        // });
+        print('>>>>>>>>>>>>>>>>>>>:${goodsList.data[0].goodsName}');
+  
   }
 }

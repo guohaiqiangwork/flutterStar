@@ -151,9 +151,9 @@ class SwiperDiy extends StatelessWidget {
   SwiperDiy({this.swiperDateList});
   @override
   Widget build(BuildContext context) {
-    print('获取设备像素密度:${ScreenUtil.pixelRatio}');
-    print('获取设备高:${ScreenUtil.screenHeight}');
-    print('获取设备宽:${ScreenUtil.screenWidth}');
+    // print('获取设备像素密度:${ScreenUtil.pixelRatio}');
+    // print('获取设备高:${ScreenUtil.screenHeight}');
+    // print('获取设备宽:${ScreenUtil.screenWidth}');
     //ui适配设计图尺寸 字体是否根据设计图缩放
     //  ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: true);
     return Container(
